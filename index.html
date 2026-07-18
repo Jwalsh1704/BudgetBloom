@@ -8,12 +8,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .hero-bg { background: linear-gradient(135deg, #10b981 0%, #4f46e5 100%); }
+        
+        :root {
+            --primary: #22c55e;
+        }
+        
+        .tail-container {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, #10b981 0%, #4f46e5 100%);
+        }
+        
+        .budget-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .budget-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        
+        .category-bar {
+            height: 12px;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .nav-active {
+            border-bottom: 3px solid #22c55e;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
-
+<body class="tail-container bg-gray-50 text-gray-900">
     <!-- Navbar -->
     <nav class="bg-white border-b sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -25,60 +53,462 @@
                 </div>
             </div>
             
-            <button onclick="showAuthModal()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-semibold transition-colors">
-                Sign Up Free
-            </button>
+            <div class="hidden md:flex items-center gap-x-8 text-sm font-medium">
+                <a href="#" onclick="navigateTo('dashboard')" class="nav-link nav-active text-gray-700 hover:text-emerald-600">Dashboard</a>
+                <a href="#" onclick="navigateTo('budget')" class="nav-link text-gray-700 hover:text-emerald-600">Budget</a>
+                <a href="#" onclick="navigateTo('tax')" class="nav-link text-gray-700 hover:text-emerald-600">Tax Calc</a>
+                <a href="#" onclick="navigateTo('plans')" class="nav-link text-gray-700 hover:text-emerald-600">Plans</a>
+            </div>
+            
+            <div class="flex items-center gap-x-4">
+                <div id="user-info" class="hidden items-center gap-x-3">
+                    <span id="user-name" class="text-sm font-medium"></span>
+                    <button onclick="logout()" class="text-xs px-4 py-2 rounded-full border hover:bg-gray-100">Logout</button>
+                </div>
+                <button onclick="showAuthModal()" id="auth-btn" 
+                        class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-semibold transition-colors">
+                    Sign Up Free
+                </button>
+            </div>
         </div>
     </nav>
 
-    <!-- Hero -->
-    <div class="hero-bg text-white py-24">
+    <!-- Hero / Landing -->
+    <div id="landing" class="hero-bg text-white py-24">
         <div class="max-w-5xl mx-auto px-6 text-center">
+            <div class="inline-flex items-center gap-x-2 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-3xl text-sm mb-6">
+                🇮🇪 Ireland &amp; 🇬🇧 UK Focused
+            </div>
             <h1 class="text-6xl md:text-7xl font-bold tracking-tighter leading-none mb-6">
                 Budget better.<br>Live brighter.
             </h1>
             <p class="max-w-lg mx-auto text-xl text-white/90 mb-10">
                 Smart budgeting with Irish &amp; UK tax rules, personalized plans, and tools to break overspending cycles.
             </p>
-            <button onclick="showAuthModal()" class="px-10 py-4 bg-white text-emerald-700 rounded-3xl text-lg font-semibold hover:scale-105 transition-all">
-                Start Free – No card needed
-            </button>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="showAuthModal()" 
+                        class="px-10 py-4 bg-white text-emerald-700 rounded-3xl text-lg font-semibold hover:scale-105 transition-all">
+                    Start Free – No card needed
+                </button>
+                <button onclick="navigateTo('dashboard')" 
+                        class="px-10 py-4 border-2 border-white/80 hover:bg-white/10 rounded-3xl text-lg font-semibold transition-all">
+                    See Demo
+                </button>
+            </div>
+            <div class="mt-16 flex justify-center gap-x-12 text-sm opacity-90">
+                <div>✅ PRSI / NI calculations</div>
+                <div>✅ Income tax bands</div>
+                <div>✅ Universal Credit aware</div>
+            </div>
         </div>
     </div>
 
-    <!-- Dashboard -->
-    <div class="max-w-7xl mx-auto px-6 py-12">
-        <h2 class="text-4xl font-semibold mb-8">Good afternoon, Alex 👋</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div class="bg-white rounded-3xl p-6">Spent: €2,184</div>
-            <div class="bg-white rounded-3xl p-6">Remaining: €1,666</div>
-            <div class="bg-white rounded-3xl p-6">Tax Est: €612</div>
-            <div class="bg-white rounded-3xl p-6 text-rose-500">Overspend Alert</div>
+    <!-- Main App Container -->
+    <div id="app" class="hidden max-w-7xl mx-auto px-6 py-8">
+        <!-- Dashboard -->
+        <div id="dashboard-page">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-4xl font-semibold">Good afternoon, <span id="greeting-name">Alex</span> 👋</h2>
+                    <p class="text-gray-600">July 2026 • Ireland</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Monthly Income</div>
+                    <div id="total-income" class="text-4xl font-bold text-emerald-600">€3,850</div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                <div class="bg-white rounded-3xl p-6 budget-card border border-emerald-100">
+                    <div class="flex justify-between">
+                        <div>
+                            <div class="text-emerald-600 text-sm font-medium flex items-center gap-x-1">
+                                <i class="fa-solid fa-wallet"></i> SPENT
+                            </div>
+                            <div id="spent-amount" class="text-3xl font-semibold mt-1">€2,184</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-2xl">57% of budget</div>
+                        </div>
+                    </div>
+                    <div class="category-bar bg-gray-200 mt-6">
+                        <div class="h-full w-[57%] bg-emerald-500"></div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-3xl p-6 budget-card border border-amber-100">
+                    <div class="flex justify-between">
+                        <div>
+                            <div class="text-amber-600 text-sm font-medium flex items-center gap-x-1">
+                                <i class="fa-solid fa-chart-pie"></i> REMAINING
+                            </div>
+                            <div id="remaining-amount" class="text-3xl font-semibold mt-1">€1,666</div>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-3xl">🌱</div>
+                    </div>
+                </div>
+                
+                <div onclick="navigateTo('tax')" class="bg-white rounded-3xl p-6 budget-card cursor-pointer border border-indigo-100">
+                    <div class="text-indigo-600 text-sm font-medium">Tax Calculator</div>
+                    <div class="text-3xl font-semibold mt-3">€612 est.</div>
+                    <div class="text-xs text-gray-500 mt-1">PAYE + PRSI</div>
+                </div>
+                
+                <div class="bg-white rounded-3xl p-6 budget-card border border-rose-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-rose-500 text-sm">Overspend Alert</div>
+                            <div class="text-lg font-medium">Groceries +€87</div>
+                        </div>
+                        <button onclick="upgradeModal()" 
+                                class="text-xs bg-rose-100 text-rose-700 px-5 py-2 rounded-2xl font-medium hover:bg-rose-200">
+                            Fix It →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Breakdown -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Categories -->
+                <div class="lg:col-span-7 bg-white rounded-3xl p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold">This Month's Budget</h3>
+                        <button onclick="addCategory()" 
+                                class="text-emerald-600 hover:text-emerald-700 text-sm font-medium flex items-center gap-x-1">
+                            <i class="fa-solid fa-plus"></i> New Category
+                        </button>
+                    </div>
+                    
+                    <div id="categories-list" class="space-y-6"></div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Tailored Tip -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8">
+                        <div class="flex gap-x-4">
+                            <div class="text-4xl">💡</div>
+                            <div>
+                                <div class="font-semibold mb-2">Personalised Plan</div>
+                                <p class="text-sm leading-relaxed text-gray-700">
+                                    With your €3,850 income in Ireland, you're on track for a strong emergency fund. 
+                                    Consider increasing your pension contribution by €50 to maximise tax relief.
+                                </p>
+                                <button onclick="upgradeModal()" 
+                                        class="mt-6 text-xs uppercase tracking-widest font-semibold bg-white px-6 py-3 rounded-2xl shadow-sm">
+                                    Unlock Full Plan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ads Placeholder (non-intrusive) -->
+                    <div class="bg-white border border-dashed border-gray-300 rounded-3xl p-8 text-center text-xs text-gray-400">
+                        <div class="uppercase tracking-widest mb-2">Sponsored</div>
+                        <div class="font-medium text-gray-600">Looking for better rates on savings?</div>
+                        <div class="text-[10px] mt-6 opacity-60">Ad space — respectful &amp; relevant placements only</div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-3xl p-6">
+                        <button onclick="navigateTo('budget')" 
+                                class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-semibold mb-3 flex items-center justify-center gap-x-2">
+                            <i class="fa-solid fa-pen"></i> Edit Full Budget
+                        </button>
+                        <button onclick="navigateTo('tax')" 
+                                class="w-full py-4 border border-gray-300 hover:bg-gray-50 rounded-2xl font-semibold flex items-center justify-center gap-x-2">
+                            <i class="fa-solid fa-calculator"></i> Run Tax Calculator
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Page -->
+        <div id="budget-page" class="hidden">
+            <h2 class="text-3xl font-semibold mb-8">Manage Budget</h2>
+            <div class="bg-white rounded-3xl p-8">
+                <table class="w-full" id="budget-table">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left py-4 font-medium text-gray-500">Category</th>
+                            <th class="text-right py-4 font-medium text-gray-500">Allocated</th>
+                            <th class="text-right py-4 font-medium text-gray-500">Spent</th>
+                            <th class="text-right py-4 font-medium text-gray-500">% Used</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="budget-tbody" class="divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tax Calculator -->
+        <div id="tax-page" class="hidden">
+            <div class="max-w-2xl mx-auto bg-white rounded-3xl p-10">
+                <h2 class="text-3xl font-semibold mb-8">Tax &amp; NI/PRSI Calculator</h2>
+                
+                <div class="space-y-8">
+                    <div>
+                        <label class="block text-sm mb-2 font-medium">Country</label>
+                        <div class="flex gap-2">
+                            <button onclick="setCountry('ie')" id="btn-ie" 
+                                    class="flex-1 py-4 rounded-2xl border-2 border-emerald-600 bg-emerald-50 font-semibold">🇮🇪 Ireland</button>
+                            <button onclick="setCountry('uk')" id="btn-uk" 
+                                    class="flex-1 py-4 rounded-2xl border font-semibold">🇬🇧 United Kingdom</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm mb-2 font-medium">Gross Monthly Income (€)</label>
+                        <input id="gross-income" type="number" value="3850" 
+                               oninput="calculateTax()" 
+                               class="w-full px-6 py-5 text-3xl font-semibold border-0 bg-gray-100 rounded-3xl focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-gray-50 rounded-3xl p-6">
+                            <div class="text-sm text-gray-500">Income Tax</div>
+                            <div id="tax-result" class="text-4xl font-bold mt-1 text-rose-600">€428</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-3xl p-6">
+                            <div class="text-sm text-gray-500">PRSI / NI</div>
+                            <div id="prsi-result" class="text-4xl font-bold mt-1">€154</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-6 border-t text-sm text-gray-600">
+                        <strong>Free users:</strong> Basic bands only. Upgrade for full reliefs, Universal Credit estimator, and pension optimisation.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plans Page -->
+        <div id="plans-page" class="hidden">
+            <h2 class="text-3xl font-semibold mb-6">Free &amp; Premium Plans</h2>
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl">
+                <!-- Free Plan -->
+                <div class="bg-white border border-gray-200 rounded-3xl p-8">
+                    <div class="uppercase text-xs tracking-widest text-emerald-600 font-semibold mb-2">Starter</div>
+                    <div class="text-5xl font-bold mb-1">Free</div>
+                    <div class="text-gray-500 mb-8">Always</div>
+                    
+                    <ul class="space-y-4 mb-12">
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check text-emerald-500 mt-1"></i> Basic budgeting</li>
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check text-emerald-500 mt-1"></i> Tax estimator</li>
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check text-emerald-500 mt-1"></i> Income-based templates</li>
+                        <li class="flex gap-x-3 text-gray-400"><i class="fa-solid fa-xmark mt-1"></i> Overspend coach</li>
+                    </ul>
+                    
+                    <button onclick="navigateTo('dashboard')" 
+                            class="w-full py-6 border-2 border-emerald-600 text-emerald-700 rounded-3xl font-semibold">
+                        Continue with Free
+                    </button>
+                </div>
+                
+                <!-- Premium -->
+                <div class="bg-gradient-to-br from-emerald-600 to-teal-600 text-white rounded-3xl p-8 relative overflow-hidden">
+                    <div class="absolute -right-6 -top-6 bg-amber-400 text-amber-900 text-xs font-bold px-12 py-1 rotate-45">BEST VALUE</div>
+                    
+                    <div class="uppercase text-xs tracking-widest opacity-75 mb-2">Premium</div>
+                    <div class="flex items-baseline gap-x-2">
+                        <div class="text-5xl font-bold">€2</div>
+                        <div class="opacity-75">/month</div>
+                    </div>
+                    <div class="text-sm opacity-75 mb-8">Cancel anytime</div>
+                    
+                    <ul class="space-y-4 mb-12">
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check mt-1"></i> AI overspending coach</li>
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check mt-1"></i> Habit change tools</li>
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check mt-1"></i> Advanced tax reliefs</li>
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check mt-1"></i> Export reports</li>
+                        <li class="flex gap-x-3"><i class="fa-solid fa-check mt-1"></i> Priority support</li>
+                    </ul>
+                    
+                    <button onclick="subscribe()" 
+                            class="w-full py-6 bg-white text-emerald-700 rounded-3xl font-semibold hover:bg-amber-100 transition-colors">
+                        Upgrade for €2/mo
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Sign Up Modal -->
-    <div id="auth-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full mx-4 p-10">
-            <h3 class="text-3xl font-semibold text-center mb-8">Create your free account</h3>
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
+        <div class="bg-white rounded-3xl max-w-md w-full mx-4 overflow-hidden">
+            <div class="p-10">
+                <h3 class="text-3xl font-semibold text-center mb-8">Create your free account</h3>
+                
+                <input id="signup-email" type="email" placeholder="Email address" 
+                       class="w-full px-6 py-5 rounded-2xl border mb-4 focus:outline-none focus:border-emerald-400">
+                
+                <input id="signup-password" type="password" placeholder="Password" 
+                       class="w-full px-6 py-5 rounded-2xl border mb-8 focus:outline-none focus:border-emerald-400">
+                
+                <button onclick="signup()" 
+                        class="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-3xl font-semibold text-lg">
+                    Sign Up – It's Free
+                </button>
+                
+                <div class="text-center text-xs text-gray-500 mt-8">
+                    By signing up you agree to our <span class="underline">Terms</span>
+                </div>
+            </div>
             
-            <input id="signup-email" type="email" placeholder="Email address" 
-                   class="w-full px-6 py-5 rounded-2xl border mb-4 focus:outline-none focus:border-emerald-400">
-            
-            <input id="signup-password" type="password" placeholder="Password" 
-                   class="w-full px-6 py-5 rounded-2xl border mb-8 focus:outline-none focus:border-emerald-400">
-            
-            <button onclick="signup()" 
-                    class="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-3xl font-semibold text-lg">
-                Sign Up – It's Free
-            </button>
-            
-            <div onclick="hideAuthModal()" class="text-center text-sm text-gray-500 mt-8 cursor-pointer hover:underline">Close</div>
+            <div onclick="hideAuthModal()" 
+                 class="border-t py-6 text-center text-sm cursor-pointer hover:bg-gray-50">Close</div>
+        </div>
+    </div>
+
+    <!-- Subscription Success Modal -->
+    <div id="success-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110]">
+        <div class="bg-white rounded-3xl p-12 max-w-sm text-center">
+            <div class="text-7xl mb-6">🎉</div>
+            <h3 class="text-3xl font-semibold mb-3">Welcome to Premium!</h3>
+            <p class="text-gray-600">Your €2 plan is now active. Start using the overspending coach today.</p>
+            <button onclick="hideSuccessModal()" 
+                    class="mt-10 w-full py-5 bg-emerald-600 text-white rounded-3xl">Continue to Dashboard</button>
         </div>
     </div>
 
     <script>
+        // Tailwind script already loaded
+        function initTailwind() {
+            // Already using CDN
+        }
+        
+        let currentUser = null;
+        let country = 'ie';
+        let categories = [
+            {name: "Rent & Bills", color: "#10b981", allocated: 1400, spent: 1400},
+            {name: "Groceries", color: "#eab308", allocated: 450, spent: 520},
+            {name: "Transport", color: "#3b82f6", allocated: 220, spent: 180},
+            {name: "Dining Out", color: "#ec4899", allocated: 180, spent: 95},
+            {name: "Entertainment", color: "#8b5cf6", allocated: 120, spent: 80},
+        ];
+        
+        function renderCategories() {
+            const container = document.getElementById('categories-list');
+            container.innerHTML = '';
+            
+            let totalAllocated = 0;
+            let totalSpent = 0;
+            
+            categories.forEach((cat, index) => {
+                totalAllocated += cat.allocated;
+                totalSpent += cat.spent;
+                
+                const percent = Math.round((cat.spent / cat.allocated) * 100) || 0;
+                
+                const div = document.createElement('div');
+                div.className = 'flex gap-6 items-center';
+                div.innerHTML = `
+                    <div style="background-color: ${cat.color}" class="w-5 h-5 rounded-xl flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <div class="flex justify-between text-sm mb-1.5">
+                            <span class="font-medium">${cat.name}</span>
+                            <span>€${cat.spent} / €${cat.allocated}</span>
+                        </div>
+                        <div class="category-bar bg-gray-100">
+                            <div style="width: ${percent}%; background-color: ${cat.color}" class="h-full"></div>
+                        </div>
+                    </div>
+                    <button onclick="deleteCategory(${index})" class="text-gray-400 hover:text-red-500">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+            
+            document.getElementById('total-income').textContent = `€${totalAllocated + 1200}`;
+            document.getElementById('spent-amount').textContent = `€${totalSpent}`;
+            document.getElementById('remaining-amount').textContent = `€${totalAllocated + 1200 - totalSpent}`;
+        }
+        
+        function deleteCategory(index) {
+            if (confirm("Delete this category?")) {
+                categories.splice(index, 1);
+                renderCategories();
+            }
+        }
+        
+        function addCategory() {
+            const name = prompt("New category name?");
+            if (!name) return;
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+            categories.push({name, color, allocated: 200, spent: 80});
+            renderCategories();
+        }
+        
+        function renderBudgetTable() {
+            const tbody = document.getElementById('budget-tbody');
+            tbody.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const percent = Math.round((cat.spent / cat.allocated) * 100);
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="py-5 font-medium">${cat.name}</td>
+                    <td class="py-5 text-right font-medium">€${cat.allocated}</td>
+                    <td class="py-5 text-right">€${cat.spent}</td>
+                    <td class="py-5 text-right">
+                        <span class="${percent > 90 ? 'text-red-500' : percent > 70 ? 'text-amber-500' : 'text-emerald-500'}">${percent}%</span>
+                    </td>
+                    <td class="py-5 text-right">
+                        <button onclick="alert('Edit coming soon!')" class="text-xs px-4 py-2 border rounded-2xl">Edit</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function calculateTax() {
+            const income = parseFloat(document.getElementById('gross-income').value) || 0;
+            
+            // Simplified calculations
+            let tax = 0;
+            let prsi = 0;
+            
+            if (country === 'ie') {
+                // Very rough Ireland PAYE/PRSI
+                tax = Math.max(0, (income * 12 * 0.2) / 12); // 20% band approx
+                prsi = income * 0.04;
+            } else {
+                // UK rough
+                tax = income * 0.2;
+                prsi = income * 0.12;
+            }
+            
+            document.getElementById('tax-result').textContent = `€${Math.round(tax)}`;
+            document.getElementById('prsi-result').textContent = `€${Math.round(prsi)}`;
+        }
+        
+        function setCountry(c) {
+            country = c;
+            document.getElementById('btn-ie').classList.toggle('border-emerald-600', c === 'ie');
+            document.getElementById('btn-ie').classList.toggle('bg-emerald-50', c === 'ie');
+            document.getElementById('btn-uk').classList.toggle('border-emerald-600', c === 'uk');
+            document.getElementById('btn-uk').classList.toggle('bg-emerald-50', c === 'uk');
+            calculateTax();
+        }
+        
+        function navigateTo(page) {
+            document.getElementById('dashboard-page').classList.add('hidden');
+            document.getElementById('budget-page').classList.add('hidden');
+            document.getElementById('tax-page').classList.add('hidden');
+            document.getElementById('plans-page').classList.add('hidden');
+            
+            document.getElementById(page + '-page').classList.remove('hidden');
+            
+            if (page === 'budget') renderBudgetTable();
+            if (page === 'tax') calculateTax();
+        }
+        
         function showAuthModal() {
             document.getElementById('auth-modal').classList.remove('hidden');
         }
@@ -89,13 +519,78 @@
         
         function signup() {
             const email = document.getElementById('signup-email').value;
-            if (email) {
-                alert("✅ Account created successfully!\n\nWelcome to BudgetBloom, " + email.split('@')[0] + "!");
-                hideAuthModal();
-            } else {
-                alert("Please enter your email");
+            if (!email) {
+                alert("Please enter an email");
+                return;
             }
+            
+            currentUser = { name: email.split('@')[0], email };
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('auth-btn').classList.add('hidden');
+            
+            hideAuthModal();
+            
+            // Show app
+            document.getElementById('landing').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            renderCategories();
         }
+        
+        function logout() {
+            currentUser = null;
+            document.getElementById('user-info').classList.add('hidden');
+            document.getElementById('auth-btn').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('landing').classList.remove('hidden');
+        }
+        
+        function upgradeModal() {
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
+            alert("In a real app this would open Stripe checkout for €2/month.");
+            // Simulate subscription
+            setTimeout(() => {
+                document.getElementById('success-modal').classList.remove('hidden');
+            }, 800);
+        }
+        
+        function subscribe() {
+            upgradeModal();
+        }
+        
+        function hideSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+            navigateTo('dashboard');
+        }
+        
+        // Keyboard shortcuts & init
+        window.onload = function() {
+            // Demo mode - auto show dashboard after 1s if no interaction
+            setTimeout(() => {
+                if (!currentUser) {
+                    // For demo
+                    document.getElementById('landing').classList.add('hidden');
+                    document.getElementById('app').classList.remove('hidden');
+                    currentUser = {name: "Demo User"};
+                    document.getElementById('user-name').textContent = "Demo";
+                    document.getElementById('user-info').classList.remove('hidden');
+                    renderCategories();
+                }
+            }, 1800);
+            
+            // Keyboard support
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "/" && document.getElementById('app').classList.contains('hidden') === false) {
+                    alert("Search coming in v2");
+                }
+            });
+            
+            console.log('%cBudgetBloom Prototype ready! 🌸', 'color:#10b981; font-size:13px');
+        };
     </script>
 </body>
 </html>
